@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections.Generic;
@@ -10,8 +10,6 @@ public class CheckerBoard : MonoBehaviour
 	public GameObject whitePiecePrefab;
 	public GameObject BluePiecePrefab;
 
-	public Transform chatMessageContainer;
-	public GameObject messagePrefab;
 
 	public GameObject highlightContainer;
 
@@ -37,7 +35,10 @@ public class CheckerBoard : MonoBehaviour
 	private Vector2 endDrag;
 
 	private Player client;
-
+	private float dist;
+	private bool dragging;
+	private Vector3 offset;
+	private Transform toDrag;
 	private void Start()
 	{
 		Instance = this;
@@ -48,23 +49,17 @@ public class CheckerBoard : MonoBehaviour
 			t.position = Vector3.down * 100;
 		}
 
-		if (client)
-		{
-			isWhite = client.isHost;
-			Alert(client.players[0].name + " versus " + client.players[1].name);
-		}
-		else
-		{
-			isWhite = true;
-			Alert("White Player's turn");
-			Transform c = GameObject.Find("Canvas").transform;
-			foreach (Transform t in c)
-			{
-				t.gameObject.SetActive(false);
-			}
 
-			c.GetChild(0).gameObject.SetActive(true);
+		isWhite = true;
+		Alert("White Player's turn");
+		Transform c = GameObject.Find("Canvas").transform;
+		foreach (Transform t in c)
+		{
+			t.gameObject.SetActive(false);
 		}
+
+		c.GetChild(0).gameObject.SetActive(true);
+
 
 		isWhiteTurn = true;
 		GenerateBoard();
@@ -73,15 +68,20 @@ public class CheckerBoard : MonoBehaviour
 
 	private void Update()
 	{
+		Debug.Log(mouseOver.x);
+		Debug.Log(mouseOver.y);
+
+		Vector3 v3;
+
 		if (gameIsOver)
 		{
 			if (Time.time - winTime > 3.0f)
 			{
-				Player client = GameObject.FindObjectOfType<Player>();
+				Player plyr = GameObject.FindObjectOfType<Player>();
 
-				
-				if (client)
-					Destroy(client.gameObject);
+
+				if (plyr)
+					Destroy(plyr.gameObject);
 				//MENU
 				SceneManager.LoadScene("Menu");
 			}
@@ -96,9 +96,31 @@ public class CheckerBoard : MonoBehaviour
 
 		UpdateAlert();
 		UpdateMouseOver();
+		
+
 
 		if ((isWhite) ? isWhiteTurn : !isWhiteTurn)
 		{
+
+			Touch touch = Input.touches[0];
+			Vector3 pos = touch.position;
+
+			if (touch.phase == TouchPhase.Began)
+			{
+				Ray ray = Camera.main.ScreenPointToRay(Input.touches[0].position);
+				RaycastHit hitA;
+
+				if (Physics.Raycast(ray, out hitA))
+				{
+					if (hitA.collider.tag == "Piece")
+					{
+						toDrag = hitA.transform;
+						dist = hitA.transform.position.z - Camera.main.transform.position.z;
+						v3 = new Vector3(pos.x, pos.y, dist);
+					}
+				}
+			}
+
 			int x = (int)mouseOver.x;
 			int y = (int)mouseOver.y;
 
@@ -116,6 +138,8 @@ public class CheckerBoard : MonoBehaviour
 	//ADAPAT TO LEAN DRAG DETECTOR, IT APPARENTLY CAN BE CALL xms so should fix soon 
 	private void UpdateMouseOver()
 	{
+		Debug.Log("UpdateMouseOver");
+
 		if (!Camera.main)
 		{
 			Debug.Log("Unable to find main camera");
@@ -127,6 +151,8 @@ public class CheckerBoard : MonoBehaviour
 		{
 			mouseOver.x = (int)(hit.point.x - boardOffset.x);
 			mouseOver.y = (int)(hit.point.z - boardOffset.z);
+			Debug.Log(mouseOver.x + ","+ mouseOver.x);
+			
 		}
 		else
 		{
@@ -137,6 +163,7 @@ public class CheckerBoard : MonoBehaviour
 
 	private void UpdatePieceDrag(Piece p)
 	{
+		Debug.Log("UpdatePieceDragr");
 		if (!Camera.main)
 		{
 			Debug.Log("Unable to find main camera");
@@ -426,3 +453,6 @@ public class CheckerBoard : MonoBehaviour
 		}
 	}
 }
+
+
+
