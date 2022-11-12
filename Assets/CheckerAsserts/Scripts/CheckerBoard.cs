@@ -34,15 +34,17 @@ public class CheckerBoard : MonoBehaviour
 	private Vector2 startDrag;
 	private Vector2 endDrag;
 
-	private Player client;
+	private Player player;
 	private float dist;
 	private bool dragging;
 	private Vector3 offset;
 	private Transform toDrag;
+
+	public LayerMask layerMask;
 	private void Start()
 	{
 		Instance = this;
-		client = FindObjectOfType<Player>();
+		player = FindObjectOfType<Player>();
 
 		foreach (Transform t in highlightContainer.transform)
 		{
@@ -68,9 +70,6 @@ public class CheckerBoard : MonoBehaviour
 
 	private void Update()
 	{
-		Debug.Log(mouseOver.x);
-		Debug.Log(mouseOver.y);
-
 		Vector3 v3;
 
 		if (gameIsOver)
@@ -101,57 +100,50 @@ public class CheckerBoard : MonoBehaviour
 
 		if ((isWhite) ? isWhiteTurn : !isWhiteTurn)
 		{
-
+			//Getting coordinates from the touch interaction.
 			Touch touch = Input.touches[0];
+			Touch t2 = Input.GetTouch(0);
 			Vector3 pos = touch.position;
+			Vector3 posO = touch.position;
+			RaycastHit raycastHit;
 
-			if (touch.phase == TouchPhase.Began)
-			{
-				Ray ray = Camera.main.ScreenPointToRay(Input.touches[0].position);
-				RaycastHit hitA;
-
-				if (Physics.Raycast(ray, out hitA))
-				{
-					if (hitA.collider.tag == "Piece")
-					{
-						toDrag = hitA.transform;
-						dist = hitA.transform.position.z - Camera.main.transform.position.z;
-						v3 = new Vector3(pos.x, pos.y, dist);
-					}
-				}
-			}
-
+			
 			int x = (int)mouseOver.x;
 			int y = (int)mouseOver.y;
 
-			if (selectedPiece != null)
-				UpdatePieceDrag(selectedPiece);
+			
+			Debug.Log("----------------------> ");
 
-			if (Input.GetMouseButtonDown(0))
+			if (t2.phase == TouchPhase.Began)
+			{
+				Debug.Log("--> GetMouseButtonDown");
 				SelectPiece(x, y);
 
-			if (Input.GetMouseButtonUp(0))
+			}
+
+			if (t2.phase == TouchPhase.Ended)
+			{
+				Debug.Log("---------> GetMouseButtonUp");
 				TryMove((int)startDrag.x, (int)startDrag.y, x, y);
+
+			}
 
 		}
 	}
-	//ADAPAT TO LEAN DRAG DETECTOR, IT APPARENTLY CAN BE CALL xms so should fix soon 
+	 
 	private void UpdateMouseOver()
 	{
-		Debug.Log("UpdateMouseOver");
-
 		if (!Camera.main)
 		{
 			Debug.Log("Unable to find main camera");
 			return;
 		}
-		//WHERE LEAN TOUH DETECTED, INSTEAD OF MOUSE POS, TOUCH COORDINATES
 		RaycastHit hit;
-		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25.0f, LayerMask.GetMask("Board")))
+		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.touches[0].position), out hit, float.MaxValue, LayerMask.GetMask("Board")))
 		{
 			mouseOver.x = (int)(hit.point.x - boardOffset.x);
 			mouseOver.y = (int)(hit.point.z - boardOffset.z);
-			Debug.Log(mouseOver.x + ","+ mouseOver.x);
+			Debug.Log("-++++MouseOverRaycast ++" + mouseOver.x + ","+ mouseOver.y);
 			
 		}
 		else
@@ -163,7 +155,7 @@ public class CheckerBoard : MonoBehaviour
 
 	private void UpdatePieceDrag(Piece p)
 	{
-		Debug.Log("UpdatePieceDragr");
+		Debug.Log("----UpdatePieceDrag");
 		if (!Camera.main)
 		{
 			Debug.Log("Unable to find main camera");
@@ -171,24 +163,30 @@ public class CheckerBoard : MonoBehaviour
 		}
 		//IF LEAN TOUCH DRAG ACTIVATED
 		RaycastHit hit;
-		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25.0f, LayerMask.GetMask("Board")))
+		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.touches[0].position), out hit, float.MaxValue, LayerMask.GetMask("Board")))
 		{
+			Debug.Log("-++++PieceDragRaycast ++" + mouseOver.x + "," + mouseOver.y + "-->" + p);
 			p.transform.position = hit.point + Vector3.up;
 		}
 	}
 
+
 	private void SelectPiece(int x, int y)
 	{
+		Debug.Log("----SelectPiece" +x + "," + y);
 		// Out of bounds
 		if (x < 0 || x >= 8 || y < 0 || y >= 8)
 			return;
 
 		Piece p = pieces[x, y];
+		Debug.Log("------------------------------------->" + p);
+
 		if (p != null && p.isWhite == isWhite)
 		{
 			if (forcedPieces.Count == 0)
 			{
 				selectedPiece = p;
+				Debug.Log("------------------------------------->" + p);
 				startDrag = mouseOver;
 			}
 			else
@@ -205,6 +203,9 @@ public class CheckerBoard : MonoBehaviour
 
 	public void TryMove(int startX, int startY, int endX, int endY)
 	{
+		Debug.Log("----TryMoveStart (" + startX + "," + startY + ")");
+		Debug.Log("----TryMoveEnd (" + endX + "," + endY + ")");
+
 		forcedPieces = ScanForPossibleMove();
 
 		startDrag = new Vector2(startX, startY);
@@ -290,15 +291,14 @@ public class CheckerBoard : MonoBehaviour
 			if (selectedPiece.isWhite && !selectedPiece.isKing && y == 7)
 			{
 				selectedPiece.isKing = true;
-				selectedPiece.GetComponentInChildren<Animator>().SetTrigger("FlipTrigger");
+				//KING ANIMATION
 			}
 			else if (!selectedPiece.isWhite && !selectedPiece.isKing && y == 0)
 			{
 				selectedPiece.isKing = true;
-				selectedPiece.GetComponentInChildren<Animator>().SetTrigger("FlipTrigger");
+				//KING ANIMATION
 			}
 		}
-
 
 		selectedPiece = null;
 		startDrag = Vector2.zero;
@@ -308,11 +308,10 @@ public class CheckerBoard : MonoBehaviour
 
 		isWhiteTurn = !isWhiteTurn;
 		//PLAYER MANAGEMENT 
-		if (!client) isWhite = !isWhite;
+		if (!player) isWhite = !isWhite;
 
 		hasKilled = false;
 		CheckVictory();
-
 		ScanForPossibleMove();
 	}
 
@@ -426,6 +425,8 @@ public class CheckerBoard : MonoBehaviour
 
 	private void MovePiece(Piece p, int x, int y)
 	{
+		Debug.Log("-------------------------------------> PIECE TO MOVE" + p + "--" + x  +"," + y );
+
 		p.transform.position = (Vector3.right * x) + (Vector3.forward * y) + boardOffset + pieceOffset;
 	}
 
