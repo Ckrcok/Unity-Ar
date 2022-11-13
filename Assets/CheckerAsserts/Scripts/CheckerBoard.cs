@@ -112,7 +112,6 @@ public class CheckerBoard : MonoBehaviour
 			int y = (int)mouseOver.y;
 
 			
-			Debug.Log("----------------------> ");
 
 			if (t2.phase == TouchPhase.Began)
 			{
@@ -291,11 +290,14 @@ public class CheckerBoard : MonoBehaviour
 			if (selectedPiece.isWhite && !selectedPiece.isKing && y == 7)
 			{
 				selectedPiece.isKing = true;
+				selectedPiece.GetComponentInChildren<Animator>().SetTrigger("IsKing");
 				//KING ANIMATION
 			}
 			else if (!selectedPiece.isWhite && !selectedPiece.isKing && y == 0)
 			{
 				selectedPiece.isKing = true;
+				selectedPiece.GetComponentInChildren<Animator>().SetTrigger("IsKing");
+
 				//KING ANIMATION
 			}
 		}
@@ -322,7 +324,9 @@ public class CheckerBoard : MonoBehaviour
 		for (int i = 0; i < ps.Length; i++)
 		{
 			if (ps[i].isWhite)
+            {
 				hasWhite = true;
+			}
 			else
 				hasBlue = true;
 		}
@@ -339,6 +343,7 @@ public class CheckerBoard : MonoBehaviour
 
 		if (isWhite)
 			Alert("White team has won");
+
 		else
 			Alert("Blue team has won");
 

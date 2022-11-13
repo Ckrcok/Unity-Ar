@@ -451,16 +451,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b2e656fe739b412cbc6811132b08349, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  whitePiecePrefab: {fileID: 8246822248494767707, guid: 277288a0bf8e4475aa5f84791c7642e2,
+  whitePiecePrefab: {fileID: 7698101345719478583, guid: 71d79dd774e7f4f45bed38153f7e8987,
     type: 3}
-  BluePiecePrefab: {fileID: 2961407782739336851, guid: 737210d1b8e7f4d46a317dbc4a6afbc6,
+  BluePiecePrefab: {fileID: 9178201983035402389, guid: 764150bf73f9d7445af514e9018fa76b,
     type: 3}
-  highlightContainer: {fileID: 3107201620941711545, guid: 97cc0c8d96f544eb2b7a5bc8b26d3832,
-    type: 3}
+  highlightContainer: {fileID: 0}
   alertCanvas: {fileID: 4524853762842476981, guid: 33ef521cf6a164d4ca7b9600111dc426,
     type: 3}
   isWhite: 0
-  cameraAR: {fileID: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 8
